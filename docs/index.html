@@ -1,61 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>blind_watermark</title>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <meta name="description" content="Description">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <link rel="stylesheet" href="vue.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>blind_watermark GitHub Pages Demo</title>
+    <meta name="description" content="A simple GitHub Pages demo for adding and extracting text watermarks in the browser.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<main class="page-shell">
+    <section class="hero">
+        <p class="eyebrow">blind_watermark</p>
+        <h1>简单 GitHub Pages 水印页</h1>
+        <p class="hero-copy">
+            浏览器本地完成图片处理，不依赖后端。支持为图片加入文字水印，也支持从带水印图片中提取文字。
+        </p>
+        <div class="hero-notes">
+            <span>建议下载为 PNG</span>
+            <span>所有处理都在本地进行</span>
+            <span>适合 GitHub Pages 静态部署</span>
+        </div>
+    </section>
 
-<div id="app"></div>
-<script>
-    window.$docsify = {
-        name: '',
-        repo: ''
-    }
-</script>
-<script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
+    <section class="grid">
+        <article class="panel">
+            <div class="panel-head">
+                <h2>加入水印</h2>
+                <p>上传原图，输入水印文字和密码，生成可下载的带水印图片。</p>
+            </div>
 
+            <label class="field">
+                <span>原图</span>
+                <input id="embed-image" type="file" accept="image/*">
+            </label>
 
-<script>
+            <label class="field">
+                <span>水印文字</span>
+                <textarea id="embed-text" rows="4" placeholder="例如：blind_watermark demo / your brand / order-20260406"></textarea>
+            </label>
 
-    window.$docsify = {
-        plugins: [
-            function (hook, vm) {
-                hook.beforeEach(function (html) {
-                    var url = 'https://github.com/guofei9987/blind_watermark/blob/master/docs/' + vm.route.file;
-                    var editHtml = '[:memo: Edit](' + url + ')\n';
+            <label class="field">
+                <span>密码</span>
+                <input id="embed-password" type="password" placeholder="输入提取时要使用的密码">
+            </label>
 
-                    return editHtml
-                        + html
-                        + '\n\n----\n\n'
-                        + ' '
-                        + editHtml
-                })
-            }
-        ],
-        auto2top: true,
-        coverpage: ['/', '/en/', '/zh/'],
-        executeScript: true,
-        loadSidebar: true,
-        loadNavbar: true,
-        mergeNavbar: true,
-        maxLevel: 4,
-        subMaxLevel: 2,
-        notFoundPage: 'README.md'
-    };
-</script>
+            <div class="stats" id="embed-stats">
+                <span>等待图片</span>
+            </div>
 
-<script src="//unpkg.com/docsify/lib/plugins/search.js"></script>
+            <div class="actions">
+                <button id="embed-button" type="button">生成带水印图片</button>
+                <a id="download-link" class="download-link disabled" href="#" download="watermarked.png" aria-disabled="true">下载 PNG</a>
+            </div>
 
+            <p class="status" id="embed-status">尚未开始。</p>
 
-<!-- 代码高亮 -->
-<script src="//unpkg.com/prismjs/components/prism-python.min.js"></script>
-<script src="//unpkg.com/prismjs/components/prism-bash.min.js"></script>
+            <div class="preview-grid">
+                <figure class="preview-card">
+                    <figcaption>原图预览</figcaption>
+                    <canvas id="source-preview"></canvas>
+                </figure>
+                <figure class="preview-card">
+                    <figcaption>结果预览</figcaption>
+                    <canvas id="result-preview"></canvas>
+                </figure>
+            </div>
+        </article>
 
+        <article class="panel">
+            <div class="panel-head">
+                <h2>提取水印</h2>
+                <p>上传带水印图片并输入相同密码，尝试恢复其中的文字水印。</p>
+            </div>
+
+            <label class="field">
+                <span>带水印图片</span>
+                <input id="extract-image" type="file" accept="image/*">
+            </label>
+
+            <label class="field">
+                <span>密码</span>
+                <input id="extract-password" type="password" placeholder="需要与嵌入时一致">
+            </label>
+
+            <div class="actions">
+                <button id="extract-button" type="button">提取文字水印</button>
+            </div>
+
+            <p class="status" id="extract-status">尚未开始。</p>
+
+            <label class="field">
+                <span>提取结果</span>
+                <textarea id="extract-output" rows="8" readonly placeholder="提取成功后会显示在这里"></textarea>
+            </label>
+
+            <figure class="preview-card single-preview">
+                <figcaption>待提取图片预览</figcaption>
+                <canvas id="extract-preview"></canvas>
+            </figure>
+        </article>
+    </section>
+
+    <section class="info-strip">
+        <div>
+            <h3>说明</h3>
+            <p>这个页面使用浏览器端的轻量实现，目标是让仓库可以直接作为 GitHub Pages 发布并具备可交互能力。</p>
+        </div>
+        <div>
+            <h3>限制</h3>
+            <p>为了保证提取成功率，请优先使用 PNG，避免二次压缩、截图、重采样或强滤镜处理。</p>
+        </div>
+        <div>
+            <h3>源码</h3>
+            <p><a href="https://github.com/guofei9987/blind_watermark" target="_blank" rel="noreferrer">查看仓库</a></p>
+        </div>
+    </section>
+</main>
+
+<script src="app.js"></script>
 </body>
 </html>
